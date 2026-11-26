@@ -18,8 +18,7 @@ async def jsonl_lines(path: Path, speed: float = 1.0, loop: bool = True) -> Asyn
                 dt = _extract_dt(line)
                 if prev_dt is not None and dt is not None:
                     delay = min((dt - prev_dt).total_seconds(), MAX_GAP_SECONDS) / speed
-                    if delay > 0.001:
-                        await asyncio.sleep(delay)
+                    await asyncio.sleep(delay if delay > 0.001 else 0)
                 if dt is not None:
                     prev_dt = dt
                 yield line
