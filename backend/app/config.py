@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     llm_api_key: str = ""
     llm_model: str = ""
+    llm_api_url: str = "https://api.groq.com/openai/v1/chat/completions"
 
     # "live" talks to Wikimedia's real SSE stream; "replay" paces through
     # sample_events.jsonl so the dashboard behaves identically with no network access.

@@ -9,6 +9,7 @@ from app.main import app
 def test_stream_endpoint_emits_stats_and_feed(monkeypatch):
     monkeypatch.setattr(settings, "stream_source", "replay")
     monkeypatch.setattr(settings, "replay_speed", 10_000)
+    monkeypatch.setattr(settings, "llm_api_key", "")
 
     with TestClient(app) as client:
         with client.stream("GET", "/stream") as response:
@@ -20,4 +21,5 @@ def test_stream_endpoint_emits_stats_and_feed(monkeypatch):
                     assert "feed" in payload
                     assert "global" in payload["stats"]
                     assert "by_wiki" in payload["stats"]
+                    assert payload["summary"] is None
                     break

@@ -8,7 +8,12 @@ from app.services.stats_engine import MIN_ELAPSED_SECONDS, StatsEngine
 
 def test_ingestion_populates_stats_and_feed():
     replay_settings = settings.model_copy(
-        update={"stream_source": "replay", "replay_speed": 10_000, "replay_loop": False}
+        update={
+            "stream_source": "replay",
+            "replay_speed": 10_000,
+            "replay_loop": False,
+            "llm_api_key": "",
+        }
     )
 
     stats_engine = StatsEngine()

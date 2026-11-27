@@ -9,6 +9,7 @@ from fastapi.responses import StreamingResponse
 from app.config import settings
 from app.services.feed_buffer import FeedBuffer
 from app.services.ingest_runner import run_ingestion
+from app.services.pulse_summary import PulseSummarizer
 from app.services.stats_engine import StatsEngine
 
 BROADCAST_INTERVAL_SECONDS = 1.5
@@ -18,6 +19,7 @@ BROADCAST_INTERVAL_SECONDS = 1.5
 async def lifespan(app: FastAPI):
     app.state.stats_engine = StatsEngine()
     app.state.feed_buffer = FeedBuffer()
+    app.state.pulse_summarizer = PulseSummarizer()
     task = asyncio.create_task(run_ingestion(settings, app.state.stats_engine, app.state.feed_buffer))
     yield
     task.cancel()
@@ -46,9 +48,12 @@ def health() -> dict:
 async def stream(request: Request) -> StreamingResponse:
     async def event_generator():
         while True:
+            stats = request.app.state.stats_engine.snapshot()
+            summary = await request.app.state.pulse_summarizer.get_summary(settings, stats)
             payload = {
-                "stats": request.app.state.stats_engine.snapshot(),
+                "stats": stats,
                 "feed": request.app.state.feed_buffer.recent(),
+                "summary": summary,
             }
             yield f"data: {json.dumps(payload)}\n\n"
             await asyncio.sleep(BROADCAST_INTERVAL_SECONDS)
